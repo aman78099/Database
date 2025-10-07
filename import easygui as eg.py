@@ -11,8 +11,8 @@ def setup_database():
     try:
         # Connect to the database file named 'contacts.db'.
         # This will create the file if it doesn't exist.
-        conn = sqlite3.connect('contacts.db')
-        
+        conn = sqlite3.connect('Soccer_Database.db')
+
         # Create a cursor object to execute SQL commands.
         cursor = conn.cursor()
         
@@ -21,14 +21,17 @@ def setup_database():
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS contacts (
                 id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                email TEXT NOT NULL UNIQUE
+                Name TEXT NOT NULL,
+                Position TEXT NOT NULL,
+                Player_number INTEGER,
+                Goals INTEGER,
+                Assists INTEGER
             )
         ''')
-        
+
         # Commit the changes to save the table creation to the database file.
         conn.commit()
-        
+
         # Return the connection and cursor for use in other functions.
         return conn, cursor
         
@@ -38,44 +41,44 @@ def setup_database():
         # Return None to signal that a fatal error occurred.
         return None, None
 
-def add_contact(conn, cursor):
+def add_player(conn, cursor):
     """
     Prompts the user for a new contact's details and inserts them into the database.
     """
-    msg = "Enter new contact information"
-    title = "Add Contact"
-    fieldNames = ["Name", "Email"]
+    msg = "Enter information about your new player"
+    title = "Add Player"
+    fieldNames = ["Player_name", "Position", "Player_number", "Goals", "Assists"]
     
-    # Use EasyGui's multenterbox to get multiple inputs from the user.
-    # The return value is a list of strings, or None if the user clicks 'Cancel'.
     fieldValues = eg.multenterbox(msg, title, fieldNames)
 
-    # Check if the user clicked 'Cancel'.
+    # Use EasyGui's multenterbox to get multiple inputs from the user.
+    # The return value is a list of strings, or None if the user clicks 'Cancel'.
     if fieldValues is None:
         return
 
     # Unpack the list of values into separate variables.
-    name, email = fieldValues
+    Player_name, Position, Player_number, Goals, Assists = fieldValues
     
     # Validate that both fields have been filled in.
-    if not name or not email:
-        eg.msgbox("Both Name and Email are required.", "Input Error")
+    if not Player_name or not Position or not Player_number or not Goals or not Assists:
+        eg.msgbox("All of the boxes need to be filled!", "Input Error")
         return
 
     try:
         # Execute an INSERT SQL command using placeholders (?) to prevent SQL injection.
         # This is the safest way to insert user-provided data.
-        cursor.execute("INSERT INTO contacts (name, email) VALUES (?, ?)", (name, email))
+        cursor.execute("INSERT INTO contacts (Name, Position, Player_number, Goals, Assists) VALUES (?, ?, ?, ?, ?)", 
+        (Player_name, Position, Player_number, Goals, Assists))
         
         # Commit the changes to the database to make the insertion permanent.
         conn.commit()
         
         # Show a success message to the user.
-        eg.msgbox(f"Contact '{name}' added successfully!", "Success")
+        eg.msgbox(f"Player '{Player_name}' added successfully!", "Success")
         
     except sqlite3.IntegrityError:
         # Catch a specific error if the email is not unique (due to the UNIQUE constraint).
-        eg.msgbox(f"Error: The email '{email}' already exists.", "Database Error")
+        eg.msgbox(f"Error: The player '{Player_name}' already exists.", "Database Error")
     except sqlite3.Error as e:
         # Catch any other database errors and display them.
         eg.exceptionbox(msg=f"Failed to add contact: {e}", title="Database Error")
@@ -86,26 +89,26 @@ def show_contacts(cursor):
     """
     try:
         # Execute a SELECT query to get the name and email of all contacts.
-        cursor.execute("SELECT name, email FROM contacts")
+        cursor.execute("SELECT Name, Position, Player_number, Goals, Assists FROM contacts")
         
         # Fetch all the results from the query as a list of tuples.
         rows = cursor.fetchall()
-
+        
         if not rows:
             # If the list is empty, there are no contacts.
             eg.msgbox("No contacts found in the database.", "Contact List")
             return
-
+        
         # Prepare a header for the display text.
-        contact_list = "Name\t\tEmail\n"
-        contact_list += "=" * 40 + "\n"
+        contact_list = "Name\t\tPosition\t\tNumber\t\tGoals\t\tAssists\n"
+        contact_list += "=" * 80 + "\n"
         
         # Loop through the list of tuples and format each contact into a string.
-        for name, email in rows:
-            contact_list += f"{name}\t\t{email}\n"
-            
+        for name, position, player_number, goals, assists in rows:
+            contact_list += f"{name}\t\t{position}\t\t{player_number}\t\t{goals}\t\t{assists}\n"
+
         # Use EasyGui's textbox to show the formatted list. This widget is scrollable.
-        eg.textbox("All Contacts", "Contact List", contact_list)
+        eg.codebox("All Contacts", "Contact List", contact_list)
         
     except sqlite3.Error as e:
         # Catch and display any errors during the retrieval process.
@@ -126,12 +129,12 @@ if __name__ == "__main__":
         choice = eg.buttonbox(
             "What would you like to do?",
             "Main Menu",
-            choices=["Add Contact", "Show All Contacts", "Exit"]
+            choices=["Add Player", "Show All Contacts", "Exit"]
         )
 
         # Handle the user's choice.
-        if choice == "Add Contact":
-            add_contact(conn, cursor)
+        if choice == "Add Player":
+            add_player(conn, cursor)
         elif choice == "Show All Contacts":
             show_contacts(cursor)
         elif choice == "Exit" or choice is None:
