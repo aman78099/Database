@@ -11,7 +11,7 @@ def setup_database():
     try:
         # Connect to the database file named 'contacts.db'.
         # This will create the file if it doesn't exist.
-        conn = sqlite3.connect('Soccer_Database.db')
+        conn = sqlite3.connect('Football_Database.db')
 
         # Create a cursor object to execute SQL commands.
         cursor = conn.cursor()
@@ -67,7 +67,7 @@ def add_player(conn, cursor):
     try:
         # Execute an INSERT SQL command using placeholders (?) to prevent SQL injection.
         # This is the safest way to insert user-provided data.
-        cursor.execute("INSERT INTO contacts (Name, Position, Player_number, Goals, Assists) VALUES (?, ?, ?, ?, ?)", 
+        cursor.execute("INSERT INTO Football_Database (Name, Position, Player_number, Goals, Assists) VALUES (?, ?, ?, ?, ?)", 
         (Player_name, Position, Player_number, Goals, Assists))
         
         # Commit the changes to the database to make the insertion permanent.
@@ -83,32 +83,32 @@ def add_player(conn, cursor):
         # Catch any other database errors and display them.
         eg.exceptionbox(msg=f"Failed to add contact: {e}", title="Database Error")
         
-def show_contacts(cursor):
+def show_Players(cursor):
     """
-    Retrieves all contacts from the database and displays them in a formatted message box.
+    Retrieves all Player from the database and displays them in a formatted message box.
     """
     try:
-        # Execute a SELECT query to get the name and email of all contacts.
-        cursor.execute("SELECT Name, Position, Player_number, Goals, Assists FROM contacts")
+        # Execute a SELECT query to get the Player name and Details of all contacts.
+        cursor.execute("SELECT Name, Position, Player_number, Goals, Assists FROM Football_Database")
         
         # Fetch all the results from the query as a list of tuples.
         rows = cursor.fetchall()
         
         if not rows:
             # If the list is empty, there are no contacts.
-            eg.msgbox("No contacts found in the database.", "Contact List")
+            eg.msgbox("No players found in the database.", "Player List")
             return
         
         # Prepare a header for the display text.
-        contact_list = "Name\t\tPosition\t\tNumber\t\tGoals\t\tAssists\n"
-        contact_list += "=" * 80 + "\n"
+        Player_list = "Name\t\tPosition\t\tNumber\t\tGoals\t\tAssists\n"
+        Player_list += "=" * 80 + "\n"
         
         # Loop through the list of tuples and format each contact into a string.
         for name, position, player_number, goals, assists in rows:
-            contact_list += f"{name}\t\t{position}\t\t{player_number}\t\t{goals}\t\t{assists}\n"
+            Player_list += f"{name}\t\t{position}\t\t{player_number}\t\t{goals}\t\t{assists}\n"
 
         # Use EasyGui's textbox to show the formatted list. This widget is scrollable.
-        eg.codebox("All Contacts", "Contact List", contact_list)
+        eg.codebox("All Players", "Player List", Player_list)
         
     except sqlite3.Error as e:
         # Catch and display any errors during the retrieval process.
@@ -129,14 +129,14 @@ if __name__ == "__main__":
         choice = eg.buttonbox(
             "What would you like to do?",
             "Main Menu",
-            choices=["Add Player", "Show All Contacts", "Exit"]
+            choices=["Add Player", "Show All Players", "Exit"]
         )
 
         # Handle the user's choice.
         if choice == "Add Player":
             add_player(conn, cursor)
-        elif choice == "Show All Contacts":
-            show_contacts(cursor)
+        elif choice == "Show All Players":
+            show_Players(cursor)
         elif choice == "Exit" or choice is None:
             # The loop breaks if the user clicks 'Exit' or closes the window ('None').
             break
