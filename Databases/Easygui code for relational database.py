@@ -103,7 +103,7 @@ def show_customers(cursor):
 
 def add_order(conn, cursor):
     """
-    Prompts the user for a new customer's details and inserts them into the Customers table.
+    Prompts the user for a new order's details and inserts them into the Customers table.
     """
     msg = "Enter new order details"
     title = "Add Order"
